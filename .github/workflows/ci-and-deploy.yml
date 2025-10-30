@@ -38,8 +38,9 @@ jobs:
         if: github.event_name == 'push'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           npm install -g vercel
-          vercel deploy --prod --token=$VERCEL_TOKEN --confirm --org=$VERCEL_ORG_ID --project=$VERCEL_PROJECT_ID
+          # Deploy and capture the URL
+          DEPLOY_URL=$(vercel deploy --prod --token=$VERCEL_TOKEN --confirm --project=$VERCEL_PROJECT_ID --json | jq -r '.url')
+          echo "✅ Vercel Deployment URL: $DEPLOY_URL"
