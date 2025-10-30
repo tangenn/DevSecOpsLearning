@@ -11,36 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Step 3: Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # Step 4: Run ESLint for linting
       - name: Run ESLint
         run: npm run lint
 
-      # Step 5: Run Vitest for testing
       - name: Run Vitest
         run: npx vitest run
 
-      # Step 6: Deploy to Vercel (only on push)
-      - name: Deploy to Vercel (Production)
+      - name: Deploy to Vercel
         if: github.event_name == 'push'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          npm install -g vercel
-          # Deploy and capture the URL
-          DEPLOY_URL=$(vercel deploy --prod --token=$VERCEL_TOKEN --confirm --project=$VERCEL_PROJECT_ID --json | jq -r '.url')
-          echo "✅ Vercel Deployment URL: $DEPLOY_URL"
+          npm install --global vercel
+          vercel pull --yes --token=$VERCEL_TOKEN --environment=production
+          # FIX: Added the --prod flag to match the deployment environment
+          vercel build --prod --token=$VERCEL_TOKEN
+          vercel deploy --prebuilt --token=$VERCEL_TOKEN --prod
